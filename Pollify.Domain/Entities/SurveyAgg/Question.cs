@@ -7,7 +7,7 @@ public class Question : BaseEntity<int>
     public string Title { get; set; }
     public Survey Survey { get; set; }
     public int SurveyId { get; set; }
-    public List<Option> Options { get; set; }
+    public List<Option> Options { get; set; } = [];
 
     public Question(string title, List<string> optionTexts)
     {

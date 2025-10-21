@@ -6,7 +6,7 @@ public interface IUserService
 {
     void Register(string firstName, string lastName, string userName, string password);
     UserDto Login(string userName, string password);
-    void UpdatePassword(int userId, string password);
+    void ChangePassword(int userId, string password);
     int DeleteAccount(int userId);
 
 

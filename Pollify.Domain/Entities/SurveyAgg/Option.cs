@@ -7,4 +7,5 @@ public class Option(string text) : BaseEntity<int>
     public string Text { get; set; } = text;
     public Question Question { get; set; }
     public int QuestionId { get; set; }
+    public List<Vote> Votes { get; set; }
 }
