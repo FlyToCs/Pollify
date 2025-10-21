@@ -24,7 +24,7 @@ public class OptionConfigurations : IEntityTypeConfiguration<Option>
 
         builder.HasMany(o => o.Votes)
             .WithOne(v => v.Option)
-            .HasForeignKey(v => v.Option)
+            .HasForeignKey(v => v.OptionId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

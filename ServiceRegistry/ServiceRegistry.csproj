@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Pollify.Application.Contracts\Pollify.Application.Contracts.csproj" />
+    <ProjectReference Include="..\Pollify.Application\Pollify.Application.csproj" />
+    <ProjectReference Include="..\Pollify.Domain\Pollify.Domain.csproj" />
+    <ProjectReference Include="..\Pollify.Infrastructure.EfCore\Pollify.Infrastructure.EfCore.csproj" />
+  </ItemGroup>
+
+</Project>

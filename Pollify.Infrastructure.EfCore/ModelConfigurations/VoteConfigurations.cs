@@ -17,7 +17,7 @@ public class VoteConfigurations : IEntityTypeConfiguration<Vote>
         builder.HasOne(v => v.User)
             .WithMany(u => u.Votes)
             .HasForeignKey(v => v.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.NoAction);
 
         builder.HasOne(v => v.Option)
             .WithMany(o => o.Votes)
