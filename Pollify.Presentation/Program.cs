@@ -99,11 +99,11 @@ void AuthenticationMenu(IServiceProvider serviceProvider)
 
                         if (currentUser.Role == UserRoleEnum.Admin)
                         {
-                            AdminMenu();
+                            AdminMenu(serviceProvider);
                         }
                         else if (currentUser.Role == UserRoleEnum.Member)
                         {
-                            MemberMenu();
+                            MemberMenu(serviceProvider);
                         }
 
                         Console.ReadKey();
@@ -143,8 +143,10 @@ void AuthenticationMenu(IServiceProvider serviceProvider)
     }
 }
 
-void MemberMenu()
+void MemberMenu(IServiceProvider serviceProvider)
 {
+    var userService = serviceProvider.GetRequiredService<ISurveyService>();
+
     while (true)
     {
         try
@@ -189,8 +191,9 @@ void MemberMenu()
     }
 }
 
-void AdminMenu()
+void AdminMenu(IServiceProvider serviceProvider)
 {
+    var userService = serviceProvider.GetRequiredService<ISurveyService>();
     while (true)
     {
         try
@@ -236,8 +239,6 @@ void AdminMenu()
             Console.WriteLine(e.Message);
             Console.ReadKey();
         }
-
-
     }
 }
 

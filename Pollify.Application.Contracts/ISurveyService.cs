@@ -4,9 +4,9 @@ namespace Pollify.Application.Contracts;
 
 public interface ISurveyService
 {
-    void Create(string title);
+    void Create(CreateSurveyDto createSurveyDto);
     int Delete(int surveyId);
     List<SurveyDto> GetAll();
-    public List<ResultSurveyDto> ResultSurvey { get; set; }
+    ResultSurveyDto ResultSurvey(int surveyId);
 
 }

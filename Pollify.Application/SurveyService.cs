@@ -1,24 +1,35 @@
 ﻿using Pollify.Application.Contracts;
 using Pollify.Domain.DTOs;
+using Pollify.Domain.Entities.SurveyAgg;
 
 namespace Pollify.Application;
 
-public class SurveyService:ISurveyService
+public class SurveyService(ISurveyRepository surveyRepository) : ISurveyService
 {
-    public void Create(string title)
+    public void Create(CreateSurveyDto createSurveyDto)
     {
-        throw new NotImplementedException();
+        if (surveyRepository.IsSurveyTitleExist(createSurveyDto.SurveyTitle))
+            throw new Exception("you created a survey with this title before");
+        
+        surveyRepository.Create(createSurveyDto);
+        surveyRepository.Save();
     }
 
     public int Delete(int surveyId)
     {
-        throw new NotImplementedException();
+        if (!surveyRepository.SurveyHasParticipant(surveyId))
+            throw new Exception("you can't delete this survey, this survey doesn't have any participants");
+        
+        return surveyRepository.Delete(surveyId);
     }
 
     public List<SurveyDto> GetAll()
     {
-        throw new NotImplementedException();
+        return surveyRepository.GetAll();
     }
 
-    public List<ResultSurveyDto> ResultSurvey { get; set; }
+    public ResultSurveyDto ResultSurvey(int surveyId)
+    {
+        return surveyRepository.ResultSurvey(surveyId);
+    }
 }

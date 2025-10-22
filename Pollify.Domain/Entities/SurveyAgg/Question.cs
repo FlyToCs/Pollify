@@ -8,6 +8,4 @@ public class Question : BaseEntity<int>
     public Survey Survey { get; set; }
     public int SurveyId { get; set; }
     public List<Option> Options { get; set; } = [];
-
-
 }

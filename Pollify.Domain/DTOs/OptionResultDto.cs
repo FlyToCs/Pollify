@@ -2,8 +2,7 @@
 
 public class OptionResultDto
 {
-    public string Question { get; set; }
-    public int optionText { get; set; }
+    public string OptionText { get; set; } 
     public int OptionCount { get; set; }
     public decimal OptionPercent { get; set; }
 }
