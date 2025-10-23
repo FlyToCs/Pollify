@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Runtime.CompilerServices;
+using Microsoft.EntityFrameworkCore;
 using Pollify.Domain.DTOs;
 using Pollify.Domain.Entities.SurveyAgg;
 using Pollify.Infrastructure.EfCore.persistence;
@@ -13,7 +14,7 @@ public class SurveyRepository(AppDbContext context) : ISurveyRepository
         {
             Name = createSurveyDto.SurveyTitle,
             UserId = createSurveyDto.UserId,
-            Questions = new List<Question>()
+            Questions = []
         };
 
         foreach (var questionDto in createSurveyDto.QuestionDtos)
@@ -22,7 +23,7 @@ public class SurveyRepository(AppDbContext context) : ISurveyRepository
             {
                 Title = questionDto.Text, 
                 Survey = survey, 
-                Options = new List<Option>() 
+                Options = []
             };
 
             foreach (var optionText in questionDto.Options)
@@ -73,7 +74,7 @@ public class SurveyRepository(AppDbContext context) : ISurveyRepository
             .Distinct()
             .Select(u => new SurveyParticipantsDto
             {
-                Name = u.FirstName + " " + u.LastName,
+                Name = $"{u.FirstName} {u.LastName}",
                 UserName = u.UserName
             })
             .ToList(); 
@@ -81,8 +82,8 @@ public class SurveyRepository(AppDbContext context) : ISurveyRepository
         var questions = context.Questions
             .Where(q => q.SurveyId == surveyId)
             .Include(q => q.Options)
-                .ThenInclude(o => o.Votes)
-            .ToList(); 
+            .ThenInclude(o => o.Votes)
+            .ToList();
 
         var questionResults = new List<QuestionResultDto>();
 
@@ -122,6 +123,13 @@ public class SurveyRepository(AppDbContext context) : ISurveyRepository
         };
 
         return result;
+    }
+
+    public bool IsVotedBefore(int surveyId, int userId)
+    {
+        return context.Votes.Any(v =>
+            v.UserId == userId &&
+            v.Option.Question.Survey.Id == surveyId);
     }
 
     public void Save()

@@ -10,5 +10,6 @@ public interface ISurveyRepository
     int Delete(int surveyId);
     List<SurveyDto> GetAll();
     ResultSurveyDto ResultSurvey(int surveyId);
+    bool IsVotedBefore(int surveyId, int userId);
     void Save();
 }

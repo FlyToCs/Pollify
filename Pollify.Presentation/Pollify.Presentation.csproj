@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Pollify.Framework\Pollify.Framework.csproj" />
     <ProjectReference Include="..\ServiceRegistry\ServiceRegistry.csproj" />
   </ItemGroup>
 

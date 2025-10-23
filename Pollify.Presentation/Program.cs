@@ -6,6 +6,7 @@ using Pollify.Application;
 using Pollify.Application.Contracts;
 using Pollify.Domain.DTOs;
 using Pollify.Domain.Entities.UserAgg;
+using Pollify.Framework;
 using ServiceRegistry;
 using Spectre.Console;
 Console.OutputEncoding = System.Text.Encoding.UTF8;
@@ -146,6 +147,9 @@ void AuthenticationMenu(IServiceProvider serviceProvider)
 void MemberMenu(IServiceProvider serviceProvider)
 {
     var userService = serviceProvider.GetRequiredService<ISurveyService>();
+    var surveyService = serviceProvider.GetRequiredService<ISurveyService>();
+    var questionService = serviceProvider.GetRequiredService<IQuestionService>();
+    var voteService = serviceProvider.GetRequiredService<IVoteService>();
 
     while (true)
     {
@@ -155,7 +159,6 @@ void MemberMenu(IServiceProvider serviceProvider)
             Console.WriteLine("1. Survey List");
             Console.WriteLine("2. Vote");
             Console.WriteLine("3. Logout");
-
             Console.Write("\nSelect an option:");
             var selectedItem = int.Parse(Console.ReadLine()!);
 
@@ -163,13 +166,114 @@ void MemberMenu(IServiceProvider serviceProvider)
             {
                 case 1:
                     {
+                        var surveys = surveyService.GetAll();
+
+                        AnsiConsole.Clear();
+                        AnsiConsole.Write(
+                            new FigletText("🗳 Survey List 🗳")
+                                .Centered()
+                                .Color(Color.Cyan1)
+                        );
+
+                        if (surveys == null || !surveys.Any())
+                        {
+                            AnsiConsole.MarkupLine("[red]❌ No surveys found.[/]");
+                            AnsiConsole.MarkupLine("[yellow]Press any key to return...[/]");
+                            Console.ReadKey();
+                            break;
+                        }
+
+                        var table = new Table()
+                            .Centered()
+                            .Border(TableBorder.Rounded)
+                            .Title("[bold yellow]Available Surveys[/]")
+                            .AddColumn("[green]ID[/]")
+                            .AddColumn("[aqua]Title[/]");
+
+                        foreach (var s in surveys)
+                        {
+                            table.AddRow($"[white]{s.Id}[/]", $"[silver]{s.Tilte}[/]");
+                        }
+
+                        AnsiConsole.Write(table);
                         break;
                     }
                 case 2:
                     {
+                        var surveys = surveyService.GetAll();
+                        Console.WriteLine("📋 Available Surveys:");
+                        Console.WriteLine("──────────────────────────────────────────");
+
+                        foreach (var s in surveys)
+                        {
+                            Console.WriteLine($"ID: {s.Id,-3}  |  Title: {s.Tilte}");
+                        }
+
+                        Console.WriteLine("──────────────────────────────────────────");
+                        Console.Write("\nEnter the ID of the survey you want to answer: ");
+                        int surveyId = int.Parse(Console.ReadLine()!);
+                        bool votedBefore = surveyService.IsVotedBefore(surveyId,currentUser.Id);
+                        if (votedBefore)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("❌ you voted on this survey before.");
+                            Console.ResetColor();
+                            Console.ReadKey();
+                            break;
+                        }
+
+                        var questions = questionService.GetQuestions(surveyId);
+
+                        Console.Clear();
+                        Console.WriteLine($"📝 Answering Survey ID: {surveyId}");
+                        Console.WriteLine("──────────────────────────────────────────\n");
+
+                        foreach (var question in questions)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Cyan;
+                            Console.WriteLine($"❓ Question: {question.Title}");
+                            Console.ResetColor();
+                            Console.WriteLine("------------------------------------------");
+
+                            for (int i = 0; i < question.Options.Count; i++)
+                            {
+                                var option = question.Options[i];
+                                Console.WriteLine($"{i + 1}. {option.Text}");
+                            }
+
+                            Console.WriteLine("------------------------------------------");
+
+                            int selectedNumber;
+                            int selectedOptionId;
+
+                            while (true)
+                            {
+                                Console.Write("👉 Select an option number: ");
+                                if (int.TryParse(Console.ReadLine(), out selectedNumber) &&
+                                    selectedNumber >= 1 && selectedNumber <= question.Options.Count)
+                                {
+                                    selectedOptionId = question.Options[selectedNumber - 1].Id;
+                                    break;
+                                }
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.WriteLine("❌ Invalid choice. Please try again.");
+                                Console.ResetColor();
+                            }
+
+                            voteService.Create(currentUser.Id, selectedOptionId);
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.WriteLine("✅ Vote submitted!\n");
+                            Console.ResetColor();
+                        }
+
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine("🎉 Thank you! All your votes have been recorded.");
+                        Console.ResetColor();
 
                         break;
                     }
+
+
                 case 3:
                     {
                         AuthenticationMenu(serviceProvider);
@@ -193,7 +297,7 @@ void MemberMenu(IServiceProvider serviceProvider)
 
 void AdminMenu(IServiceProvider serviceProvider)
 {
-    var userService = serviceProvider.GetRequiredService<ISurveyService>();
+    var surveyService = serviceProvider.GetRequiredService<ISurveyService>();
     while (true)
     {
         try
@@ -210,19 +314,270 @@ void AdminMenu(IServiceProvider serviceProvider)
             switch (selectedItem)
             {
                 case 1:
-                {
-                    break;
-                }
+                    {
+                        AnsiConsole.Clear();
+                        AnsiConsole.Write(
+                            new FigletText("📝 Create Survey")
+                                .Centered()
+                                .Color(Color.Cyan1)
+                        );
+
+                        var createSurveyDto = new CreateSurveyDto();
+                        createSurveyDto.QuestionDtos = new List<CreateQuestionDto>();
+
+                        createSurveyDto.UserId = currentUser.Id;
+                        createSurveyDto.SurveyTitle = AnsiConsole.Ask<string>("[bold yellow]Enter survey title:[/]");
+
+                        int questionCount = AnsiConsole.Ask<int>("[bold green]How many questions does this survey have?[/]");
+
+                        for (int i = 1; i <= questionCount; i++)
+                        {
+                            AnsiConsole.MarkupLine($"\n[bold underline cyan]Question {i}[/]");
+
+                            var questionDto = new CreateQuestionDto();
+                            questionDto.Text = AnsiConsole.Ask<string>("[yellow]Enter question text:[/]");
+
+                            for (int j = 1; j <= 4; j++)
+                            {
+                                string optionText = AnsiConsole.Ask<string>($"[green]Enter option {j}:[/]");
+                                questionDto.Options.Add(optionText);
+                            }
+
+                            createSurveyDto.QuestionDtos.Add(questionDto);
+                        }
+                        var confirm = AnsiConsole.Confirm("\n[bold cyan]Do you want to create this survey?[/]");
+                        if (confirm)
+                        {
+                            surveyService.Create(createSurveyDto);
+
+                            AnsiConsole.Clear();
+                            AnsiConsole.Write(
+                                new FigletText("✅ Survey Created!")
+                                    .Centered()
+                                    .Color(Color.Green)
+                            );
+
+                            var table = new Table()
+                                .Border(TableBorder.Rounded)
+                                .Title($"[bold yellow]Survey Summary[/]")
+                                .AddColumn("[cyan]User ID[/]")
+                                .AddColumn("[green]Title[/]")
+                                .AddColumn("[aqua]Question Count[/]");
+
+                            table.AddRow(
+                                $"[white]{createSurveyDto.UserId}[/]",
+                                $"[white]{createSurveyDto.SurveyTitle}[/]",
+                                $"[white]{createSurveyDto.QuestionDtos.Count}[/]"
+                            );
+
+                            AnsiConsole.Write(table);
+                            foreach (var (question, index) in createSurveyDto.QuestionDtos.Select((q, i) => (q, i + 1)))
+                            {
+                                AnsiConsole.MarkupLine($"\n[bold underline yellow]Question {index}:[/] [white]{question.Text}[/]");
+                                var optionTable = new Table()
+                                    .Border(TableBorder.Simple)
+                                    .AddColumn("[green]Option[/]")
+                                    .AddColumn("[silver]Text[/]");
+
+                                int count = 1;
+                                foreach (var opt in question.Options)
+                                    optionTable.AddRow($"{count++}", opt);
+
+                                AnsiConsole.Write(optionTable);
+                            }
+
+                            AnsiConsole.MarkupLine("\n[italic yellow]Press any key to return...[/]");
+                            Console.ReadKey();
+                        }
+                        else
+                        {
+                            AnsiConsole.MarkupLine("[grey]❌ Survey creation cancelled.[/]");
+                            Console.ReadKey();
+                        }
+
+                        break;
+                    }
+
                 case 2:
                 {
+                    var surveys = surveyService.GetAll();
 
+                    AnsiConsole.Clear();
+                    AnsiConsole.Write(
+                        new FigletText("🗳 Survey List 🗳")
+                            .Centered()
+                            .Color(Color.Cyan1)
+                    );
+
+                    if (surveys == null || !surveys.Any())
+                    {
+                        AnsiConsole.MarkupLine("[red]❌ No surveys found.[/]");
+                        AnsiConsole.MarkupLine("[yellow]Press any key to return...[/]");
+                        Console.ReadKey();
+                        break;
+                    }
+
+                    var table = new Table()
+                        .Centered()
+                        .Border(TableBorder.Rounded)
+                        .Title("[bold yellow]Available Surveys[/]")
+                        .AddColumn("[green]ID[/]")
+                        .AddColumn("[aqua]Title[/]");
+
+                    foreach (var s in surveys)
+                    {
+                        table.AddRow($"[white]{s.Id}[/]", $"[silver]{s.Tilte}[/]");
+                    }
+
+                    AnsiConsole.Write(table);
+
+                    AnsiConsole.MarkupLine("\n[bold cyan]Enter the ID of the survey you want to delete:[/]");
+                    int surveyId = AnsiConsole.Ask<int>("[yellow]>[/] ");
+
+                    var confirm = AnsiConsole.Confirm($"Are you sure you want to delete survey [red]{surveyId}[/]?");
+                    if (confirm)
+                    {
+                        try
+                        {
+                            surveyService.Delete(surveyId);
+                            AnsiConsole.MarkupLine($"[green]✔ Survey with ID {surveyId} deleted successfully![/]");
+                        }
+                        catch (Exception ex)
+                        {
+                            AnsiConsole.MarkupLine($"[red]⚠ Error:[/] {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        AnsiConsole.MarkupLine("[grey]Deletion cancelled.[/]");
+                    }
+
+                    AnsiConsole.MarkupLine("\n[italic yellow]Press any key to return...[/]");
+                    Console.ReadKey();
                     break;
                 }
+
                 case 3:
-                {
+                    {
+                        AnsiConsole.Clear();
+                        AnsiConsole.Write(
+                            new FigletText("📊 Survey Results 📊")
+                                .Centered()
+                                .Color(Color.Cyan1)
+                        );
 
-                    break;
-                }
+                        var surveys = surveyService.GetAll();
+
+                        if (surveys == null || !surveys.Any())
+                        {
+                            AnsiConsole.MarkupLine("[red]❌ No surveys found.[/]");
+                            AnsiConsole.MarkupLine("[yellow]Press any key to return...[/]");
+                            Console.ReadKey();
+                            break;
+                        }
+
+                        var surveyTable = new Table()
+                            .Border(TableBorder.Rounded)
+                            .Title("[bold yellow]Available Surveys[/]")
+                            .AddColumn("[green]ID[/]")
+                            .AddColumn("[aqua]Title[/]");
+
+                        foreach (var s in surveys)
+                            surveyTable.AddRow($"[white]{s.Id}[/]", $"[silver]{s.Tilte}[/]");
+
+                        AnsiConsole.Write(surveyTable);
+
+                        int surveyId = AnsiConsole.Ask<int>("\n[bold cyan]Enter the ID of the survey to view its results:[/]");
+
+                        var resultSurvey = surveyService.ResultSurvey(surveyId);
+                        if (resultSurvey == null)
+                        {
+                            AnsiConsole.MarkupLine($"[red]❌ No results found for survey ID {surveyId}.[/]");
+                            Console.ReadKey();
+                            break;
+                        }
+
+                        AnsiConsole.Clear();
+                        AnsiConsole.Write(
+                            new FigletText("📋 Survey Report 📋")
+                                .Centered()
+                                .Color(Color.Yellow)
+                        );
+
+                        AnsiConsole.MarkupLine($"[bold cyan]Survey ID:[/] [white]{surveyId}[/]");
+                        AnsiConsole.MarkupLine($"[bold green]Total Participants:[/] [white]{resultSurvey.TotalParticipantCount}[/]\n");
+
+                        if (resultSurvey.Participants != null && resultSurvey.Participants.Any())
+                        {
+                            var participantsTable = new Table()
+                                .Border(TableBorder.Rounded)
+                                .Title("[bold lime]Participants[/]")
+                                .AddColumn("[yellow]Name[/]")
+                                .AddColumn("[aqua]Username[/]");
+
+                            foreach (var p in resultSurvey.Participants)
+                                participantsTable.AddRow($"[white]{p.Name}[/]", $"[silver]{p.UserName}[/]");
+
+                            AnsiConsole.Write(participantsTable);
+                        }
+                        else
+                        {
+                            AnsiConsole.MarkupLine("[grey]No participants available.[/]");
+                        }
+
+                        if (resultSurvey.QuestionsResult != null && resultSurvey.QuestionsResult.Any())
+                        {
+                            foreach (var question in resultSurvey.QuestionsResult)
+                            {
+                                AnsiConsole.MarkupLine($"\n[bold underline darkorange3]❓ {question.QuestionTitle}[/]");
+
+                                var sortedOptions = question.OptionsResults
+                                    .OrderByDescending(o => o.OptionCount)
+                                    .ToList();
+
+                                var questionTable = new Table()
+                                    .Border(TableBorder.Heavy)
+                                    .AddColumn("[green]Option[/]")
+                                    .AddColumn("[aqua]Votes[/]")
+                                    .AddColumn("[yellow]Percent[/]");
+
+                                foreach (var opt in sortedOptions)
+                                {
+                                    questionTable.AddRow(
+                                        $"[bold white]{opt.OptionText}[/]",
+                                        $"[silver]{opt.OptionCount}[/]",
+                                        $"[bold yellow]{opt.OptionPercent:0.##}%[/]"
+                                    );
+                                }
+
+                                AnsiConsole.Write(questionTable);
+
+                                var chart = new BarChart()
+                                    .Width(70)
+                                    .Label("[bold cyan]Vote Distribution[/]")
+                                    .CenterLabel()
+                                    .AddItems(sortedOptions.Select(opt =>
+                                        new BarChartItem(
+                                            opt.OptionText,
+                                            (double)opt.OptionPercent,
+                                            opt.OptionPercent > 50 ? Color.Orange1 : Color.Yellow1
+                                        )));
+
+                                AnsiConsole.Write(chart);
+                            }
+                        }
+                        else
+                        {
+                            AnsiConsole.MarkupLine("[grey]No questions or results found for this survey.[/]");
+                        }
+
+                        AnsiConsole.MarkupLine("\n[italic yellow]Press any key to return...[/]");
+                        Console.ReadKey();
+                        break;
+                    }
+
+
+
                 case 4:
                 {
                     AuthenticationMenu(serviceProvider);

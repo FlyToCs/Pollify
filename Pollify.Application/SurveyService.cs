@@ -32,4 +32,9 @@ public class SurveyService(ISurveyRepository surveyRepository) : ISurveyService
     {
         return surveyRepository.ResultSurvey(surveyId);
     }
+
+    public bool IsVotedBefore(int surveyId, int userId)
+    {
+        return surveyRepository.IsVotedBefore(surveyId,userId);
+    }
 }

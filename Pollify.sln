@@ -25,6 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentatio
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pollify.Presentation", "Pollify.Presentation\Pollify.Presentation.csproj", "{EE5E22FF-8EA9-4EB7-ADCD-826903940B4B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pollify.Framework", "Pollify.Framework\Pollify.Framework.csproj", "{328113CE-1008-499F-BE4D-5B13705E30C1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,10 @@ Global
 		{EE5E22FF-8EA9-4EB7-ADCD-826903940B4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EE5E22FF-8EA9-4EB7-ADCD-826903940B4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EE5E22FF-8EA9-4EB7-ADCD-826903940B4B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{328113CE-1008-499F-BE4D-5B13705E30C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{328113CE-1008-499F-BE4D-5B13705E30C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{328113CE-1008-499F-BE4D-5B13705E30C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{328113CE-1008-499F-BE4D-5B13705E30C1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -66,6 +72,7 @@ Global
 		{EF368347-3862-47BC-B69A-A841731598BE} = {B650334C-36D1-444C-AF51-BDD6EC9AC003}
 		{C46C8C86-F68D-431E-929B-4628CBF97899} = {B650334C-36D1-444C-AF51-BDD6EC9AC003}
 		{EE5E22FF-8EA9-4EB7-ADCD-826903940B4B} = {88EA9446-5EEC-4B5C-A943-CB8FA6431981}
+		{328113CE-1008-499F-BE4D-5B13705E30C1} = {8172B091-46DE-4DBC-B5F6-3D101C7F6D65}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F68F1ECD-E026-40BC-AF47-51461E2689D7}
