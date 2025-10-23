@@ -4,7 +4,7 @@ namespace Pollify.Application.Contracts;
 
 public interface IQuestionService
 {
-    void Create(string question);
+    int Create(string question, int surveyId);
     List<QuestionWithOptionsDto> GetQuestions(int surveyId);
 
 

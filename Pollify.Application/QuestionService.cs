@@ -6,9 +6,9 @@ namespace Pollify.Application;
 
 public class QuestionService(IQuestionRepository questionRepository) : IQuestionService
 {
-    public void Create(string question)
+    public int Create(string question, int surveyId)
     {
-        throw new NotImplementedException();
+       return questionRepository.Create(question, surveyId);
     }
 
     public List<QuestionWithOptionsDto> GetQuestions(int surveyId)

@@ -18,11 +18,14 @@ namespace ServiceRegistry
             serviceCollection.AddScoped<IQuestionRepository, QuestionRepository>();
             serviceCollection.AddScoped<IVoteRepository, VoteRepository>();
             serviceCollection.AddScoped<ISurveyRepository, SurveyRepository>();
+            serviceCollection.AddScoped<IOptionRepository, OptionRepository>();
 
             serviceCollection.AddScoped<IUserService, UserService>();
             serviceCollection.AddScoped<ISurveyService, SurveyService>();
             serviceCollection.AddScoped<IQuestionService, QuestionService>();
             serviceCollection.AddScoped<IVoteService, VoteService>();
+            serviceCollection.AddScoped<IOptionService, OptionService>();
+
 
             serviceCollection.AddDbContext<AppDbContext>(x=>
                 x.UseSqlServer("Data Source=.;Initial Catalog=SurveyDb;User ID=sa; Password=123456;Trust Server Certificate=True"));

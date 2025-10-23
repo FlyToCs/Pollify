@@ -8,38 +8,16 @@ namespace Pollify.Infrastructure.EfCore.Repositories;
 
 public class SurveyRepository(AppDbContext context) : ISurveyRepository
 {
-    public void Create(CreateSurveyDto createSurveyDto)
+    public int Create(string name, int userId)
     {
         var survey = new Survey
         {
-            Name = createSurveyDto.SurveyTitle,
-            UserId = createSurveyDto.UserId,
-            Questions = []
+            Name = name,
+            UserId = userId,
         };
-
-        foreach (var questionDto in createSurveyDto.QuestionDtos)
-        {
-            var question = new Question
-            {
-                Title = questionDto.Text, 
-                Survey = survey, 
-                Options = []
-            };
-
-            foreach (var optionText in questionDto.Options)
-            {
-                var option = new Option(optionText)
-                {
-                    Question = question 
-                };
-
-                question.Options.Add(option);
-            }
-
-            survey.Questions.Add(question);
-        }
-
         context.Surveys.Add(survey);
+        context.SaveChanges();
+        return survey.Id;
     }
 
     public bool IsSurveyTitleExist(string title)

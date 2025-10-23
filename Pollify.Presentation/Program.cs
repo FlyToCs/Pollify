@@ -196,6 +196,7 @@ void MemberMenu(IServiceProvider serviceProvider)
                         }
 
                         AnsiConsole.Write(table);
+                        Console.ReadKey();
                         break;
                     }
                 case 2:
@@ -298,15 +299,17 @@ void MemberMenu(IServiceProvider serviceProvider)
 void AdminMenu(IServiceProvider serviceProvider)
 {
     var surveyService = serviceProvider.GetRequiredService<ISurveyService>();
+    var questionService = serviceProvider.GetRequiredService<IQuestionService>();
+    var optionService = serviceProvider.GetRequiredService<IOptionService>();
     while (true)
     {
         try
         {
             Console.Clear();
             Console.WriteLine("1. Create a Survey");
-            Console.WriteLine("2. Delete a Survey");
-            Console.WriteLine("3. Result a Survey");
-            Console.WriteLine("4. Logout");
+            Console.WriteLine("3. Delete a Survey");
+            Console.WriteLine("4. Result a Survey");
+            Console.WriteLine("5. Logout");
 
             Console.Write("\nSelect an option:");
             var selectedItem = int.Parse(Console.ReadLine()!);
@@ -314,91 +317,63 @@ void AdminMenu(IServiceProvider serviceProvider)
             switch (selectedItem)
             {
                 case 1:
+                {
+                    AnsiConsole.Clear();
+                    AnsiConsole.Write(
+                        new FigletText("📝 Create Survey")
+                            .Centered()
+                            .Color(Color.Cyan1)
+                    );
+
+                    Console.Write("Enter a title for the new survey: ");
+                    var surveyTitle = Console.ReadLine()!;
+                    var surveyId = surveyService.Create(surveyTitle, currentUser.Id);
+
+                    AnsiConsole.MarkupLine($"[green]✔ Survey '{surveyTitle}' created successfully![/]");
+                    Console.WriteLine();
+
+                    Console.Write("How many questions do you want to add? ");
+                    if (!int.TryParse(Console.ReadLine(), out int questionCount) || questionCount <= 0)
                     {
-                        AnsiConsole.Clear();
-                        AnsiConsole.Write(
-                            new FigletText("📝 Create Survey")
-                                .Centered()
-                                .Color(Color.Cyan1)
-                        );
-
-                        var createSurveyDto = new CreateSurveyDto();
-                        createSurveyDto.QuestionDtos = new List<CreateQuestionDto>();
-
-                        createSurveyDto.UserId = currentUser.Id;
-                        createSurveyDto.SurveyTitle = AnsiConsole.Ask<string>("[bold yellow]Enter survey title:[/]");
-
-                        int questionCount = AnsiConsole.Ask<int>("[bold green]How many questions does this survey have?[/]");
-
-                        for (int i = 1; i <= questionCount; i++)
-                        {
-                            AnsiConsole.MarkupLine($"\n[bold underline cyan]Question {i}[/]");
-
-                            var questionDto = new CreateQuestionDto();
-                            questionDto.Text = AnsiConsole.Ask<string>("[yellow]Enter question text:[/]");
-
-                            for (int j = 1; j <= 4; j++)
-                            {
-                                string optionText = AnsiConsole.Ask<string>($"[green]Enter option {j}:[/]");
-                                questionDto.Options.Add(optionText);
-                            }
-
-                            createSurveyDto.QuestionDtos.Add(questionDto);
-                        }
-                        var confirm = AnsiConsole.Confirm("\n[bold cyan]Do you want to create this survey?[/]");
-                        if (confirm)
-                        {
-                            surveyService.Create(createSurveyDto);
-
-                            AnsiConsole.Clear();
-                            AnsiConsole.Write(
-                                new FigletText("✅ Survey Created!")
-                                    .Centered()
-                                    .Color(Color.Green)
-                            );
-
-                            var table = new Table()
-                                .Border(TableBorder.Rounded)
-                                .Title($"[bold yellow]Survey Summary[/]")
-                                .AddColumn("[cyan]User ID[/]")
-                                .AddColumn("[green]Title[/]")
-                                .AddColumn("[aqua]Question Count[/]");
-
-                            table.AddRow(
-                                $"[white]{createSurveyDto.UserId}[/]",
-                                $"[white]{createSurveyDto.SurveyTitle}[/]",
-                                $"[white]{createSurveyDto.QuestionDtos.Count}[/]"
-                            );
-
-                            AnsiConsole.Write(table);
-                            foreach (var (question, index) in createSurveyDto.QuestionDtos.Select((q, i) => (q, i + 1)))
-                            {
-                                AnsiConsole.MarkupLine($"\n[bold underline yellow]Question {index}:[/] [white]{question.Text}[/]");
-                                var optionTable = new Table()
-                                    .Border(TableBorder.Simple)
-                                    .AddColumn("[green]Option[/]")
-                                    .AddColumn("[silver]Text[/]");
-
-                                int count = 1;
-                                foreach (var opt in question.Options)
-                                    optionTable.AddRow($"{count++}", opt);
-
-                                AnsiConsole.Write(optionTable);
-                            }
-
-                            AnsiConsole.MarkupLine("\n[italic yellow]Press any key to return...[/]");
-                            Console.ReadKey();
-                        }
-                        else
-                        {
-                            AnsiConsole.MarkupLine("[grey]❌ Survey creation cancelled.[/]");
-                            Console.ReadKey();
-                        }
-
+                        AnsiConsole.MarkupLine("[red]❌ Invalid number. Returning to main menu...[/]");
                         break;
                     }
 
+                    for (int i = 1; i <= questionCount; i++)
+                    {
+                        AnsiConsole.Clear();
+                        AnsiConsole.MarkupLine($"[yellow]📋 Creating question {i}/{questionCount}[/]");
+                        Console.Write("Enter question text: ");
+                        var questionText = Console.ReadLine()!;
+
+                        var questionId = questionService.Create(questionText, surveyId);
+                        AnsiConsole.MarkupLine($"[green]✔ Question added successfully![/]");
+                        Console.WriteLine();
+
+                        for (int j = 1; j <= 4; j++)
+                        {
+                            Console.Write($"Enter option {j} text: ");
+                            var optionText = Console.ReadLine()!;
+                            optionService.Create(optionText, questionId);
+                        }
+
+                        AnsiConsole.MarkupLine("[green]✔ 4 options added successfully![/]");
+                        Console.WriteLine();
+                    }
+
+                    AnsiConsole.MarkupLine("[cyan]🎉 Survey created successfully with all questions and options![/]");
+                    Console.WriteLine("Press any key to return to the main menu...");
+                    Console.ReadKey();
+                    break;
+                }
+
+
+
                 case 2:
+                {
+                    break;
+                }
+                case 3:
                 {
                     var surveys = surveyService.GetAll();
 
@@ -457,7 +432,7 @@ void AdminMenu(IServiceProvider serviceProvider)
                     break;
                 }
 
-                case 3:
+                case 4:
                     {
                         AnsiConsole.Clear();
                         AnsiConsole.Write(
@@ -578,7 +553,7 @@ void AdminMenu(IServiceProvider serviceProvider)
 
 
 
-                case 4:
+                case 5:
                 {
                     AuthenticationMenu(serviceProvider);
                     break;
