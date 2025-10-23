@@ -39,6 +39,19 @@ public class UserRepository(AppDbContext appDbContext) : IUserRepository
             }).FirstOrDefault();
     }
 
+    public UserLoginDto? LoginGetByUserName(string username)
+    {
+        return appDbContext.Users.Where(u => u.UserName == username)
+            .Select(u => new UserLoginDto()
+            {
+                Id = u.Id,
+                Name = $"{u.FirstName} {u.LastName}",
+                UserName = u.UserName,
+                HashedPassword = u.HashedPassword,
+                Role = u.Role
+            }).FirstOrDefault();
+    }
+
     public int UpdatePassword(int userId, string newPassword)
     {
         return appDbContext.Users.Where(u => u.Id == userId)

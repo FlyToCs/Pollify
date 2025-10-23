@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Pollify.Application.Contracts\Pollify.Application.Contracts.csproj" />
+    <ProjectReference Include="..\Pollify.Framework\Pollify.Framework.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,7 @@
 ﻿using Pollify.Application.Contracts;
 using Pollify.Domain.DTOs;
 using Pollify.Domain.Entities.UserAgg;
+using Pollify.Framework;
 
 namespace Pollify.Application;
 
@@ -27,10 +28,23 @@ public class UserService(IUserRepository userRepository) : IUserService
 
     public UserDto Login(string userName, string password)
     {
-        if (!userRepository.IsUserExist(userName, password))
+
+        var user = userRepository.LoginGetByUserName(userName);
+        if (user == null)
+            throw new Exception("the username or password is incorrect");
+  
+        bool isPasswordValid = PasswordHasherSha256.VerifyPassword(password, user.HashedPassword);
+
+        if (!isPasswordValid)
             throw new Exception("the username or password is incorrect");
 
-        return userRepository.GetByUserName(userName)!;
+        return new UserDto()
+        {
+            Id = user.Id,
+            Name = user.Name,
+            Role = user.Role,
+            UserName = user.UserName
+        };
 
     }
 
