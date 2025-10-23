@@ -27,7 +27,8 @@ public class SurveyRepository(AppDbContext context) : ISurveyRepository
 
     public bool SurveyHasParticipant(int surveyId)
     {
-        throw new NotImplementedException();
+        return context.Votes
+            .Any(v => v.Option.Question.SurveyId == surveyId);
     }
 
     public int Delete(int surveyId)
@@ -46,62 +47,42 @@ public class SurveyRepository(AppDbContext context) : ISurveyRepository
 
     public ResultSurveyDto ResultSurvey(int surveyId)
     {
-        var participants = context.Votes
-            .Where(v => v.Option.Question.SurveyId == surveyId)
-            .Select(v => v.User)
-            .Distinct()
-            .Select(u => new SurveyParticipantsDto
-            {
-                Name = $"{u.FirstName} {u.LastName}",
-                UserName = u.UserName
-            })
-            .ToList(); 
-
-        var questions = context.Questions
+        var result = context.Questions
             .Where(q => q.SurveyId == surveyId)
-            .Include(q => q.Options)
-            .ThenInclude(o => o.Votes)
-            .ToList();
-
-        var questionResults = new List<QuestionResultDto>();
-
-        foreach (var q in questions)
-        {
-            int totalVotesForThisQuestion = q.Options.Sum(o => o.Votes.Count);
-
-            var optionResults = new List<OptionResultDto>();
-            foreach (var o in q.Options)
-            {
-                int voteCount = o.Votes.Count;
-                decimal percentage = (totalVotesForThisQuestion == 0)
-                                     ? 0
-                                     : ((decimal)voteCount / totalVotesForThisQuestion) * 100;
-
-                optionResults.Add(new OptionResultDto
-                {
-                    OptionText = o.Text, 
-                    OptionCount = voteCount,
-                    OptionPercent = Math.Round(percentage, 2) 
-                });
-            }
-
-            questionResults.Add(new QuestionResultDto
+            .Select(q => new QuestionResultDto
             {
                 QuestionTitle = q.Title,
-                OptionsResults = optionResults
-            });
-        }
+                OptionsResults = q.Options.Select(o => new OptionResultDto
+                {
+                    OptionText = o.Text,
+                    OptionCount = o.Votes.Count,
+                    OptionPercent = 0 
+                }).ToList()
+            })
+            .ToList();
 
-    
-        var result = new ResultSurveyDto
+        var participants = context.Votes
+            .Where(v => v.Option.Question.SurveyId == surveyId)
+            .Select(v => new
+            {
+                v.User.FirstName,
+                v.User.LastName,
+                v.User.UserName
+            })
+            .Distinct()
+            .ToList();
+
+        return new ResultSurveyDto
         {
-            TotalParticipantCount = participants.Count,
-            Participants = participants,
-            QuestionsResult = questionResults 
+            Participants = participants.Select(p => new SurveyParticipantsDto
+            {
+                Name = $"{p.FirstName} {p.LastName}",
+                UserName = p.UserName
+            }).ToList(),
+            QuestionsResult = result
         };
-
-        return result;
     }
+
 
     public bool IsVotedBefore(int surveyId, int userId)
     {

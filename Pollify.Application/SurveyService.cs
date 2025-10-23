@@ -26,8 +26,24 @@ public class SurveyService(ISurveyRepository surveyRepository) : ISurveyService
 
     public ResultSurveyDto ResultSurvey(int surveyId)
     {
-        return surveyRepository.ResultSurvey(surveyId);
+        var resultDto = surveyRepository.ResultSurvey(surveyId);
+
+        foreach (var question in resultDto.QuestionsResult)
+        {
+            int totalVotes = question.OptionsResults.Sum(o => o.OptionCount);
+
+            foreach (var option in question.OptionsResults)
+            {
+                option.OptionPercent = totalVotes == 0
+                    ? 0
+                    : Math.Round(((decimal)option.OptionCount / totalVotes) * 100, 2);
+            }
+        }
+
+        resultDto.TotalParticipantCount = resultDto.Participants.Count;
+        return resultDto;
     }
+
 
     public bool IsVotedBefore(int surveyId, int userId)
     {

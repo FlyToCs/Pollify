@@ -118,21 +118,15 @@ void AuthenticationMenu(IServiceProvider serviceProvider)
 
                         if (currentUser.Role == UserRoleEnum.Admin)
                         {
-                            AnsiConsole.MarkupLine("[bold yellow]Welcome, Admin![/]");
-                            AnsiConsole.Status().Start("Loading admin menu...", ctx =>
-                            {
-                                Thread.Sleep(800);
-                                AdminMenu(serviceProvider);
-                            });
+
+                            AdminMenu(serviceProvider);
+
                         }
                         else if (currentUser.Role == UserRoleEnum.Member)
                         {
-                            AnsiConsole.MarkupLine("[bold yellow]Welcome, Member![/]");
-                            AnsiConsole.Status().Start("Loading member menu...", ctx =>
-                            {
-                                Thread.Sleep(800);
-                                MemberMenu(serviceProvider);
-                            });
+
+                            MemberMenu(serviceProvider);
+
                         }
 
                         AnsiConsole.MarkupLine("\nPress any key to continue...");
@@ -246,7 +240,7 @@ void MemberMenu(IServiceProvider serviceProvider)
                         Console.WriteLine("──────────────────────────────────────────");
                         Console.Write("\nEnter the ID of the survey you want to answer: ");
                         int surveyId = int.Parse(Console.ReadLine()!);
-                        bool votedBefore = surveyService.IsVotedBefore(surveyId,currentUser.Id);
+                        bool votedBefore = surveyService.IsVotedBefore(surveyId, currentUser.Id);
                         if (votedBefore)
                         {
                             Console.ForegroundColor = ConsoleColor.Red;
@@ -340,6 +334,7 @@ void AdminMenu(IServiceProvider serviceProvider)
         {
             Console.Clear();
             Console.WriteLine("1. Create a Survey");
+            Console.WriteLine("2. Add Question to a Survey");
             Console.WriteLine("3. Delete a Survey");
             Console.WriteLine("4. Result a Survey");
             Console.WriteLine("5. Logout");
@@ -350,120 +345,120 @@ void AdminMenu(IServiceProvider serviceProvider)
             switch (selectedItem)
             {
                 case 1:
-                {
-                    AnsiConsole.Clear();
-                    AnsiConsole.Write(
-                        new FigletText("📝 Create Survey")
-                            .Centered()
-                            .Color(Color.Cyan1)
-                    );
-
-                    Console.Write("Enter a title for the new survey: ");
-                    var surveyTitle = Console.ReadLine()!;
-                    var surveyId = surveyService.Create(surveyTitle, currentUser.Id);
-
-                    AnsiConsole.MarkupLine($"[green]✔ Survey '{surveyTitle}' created successfully![/]");
-                    Console.WriteLine();
-
-                    Console.Write("How many questions do you want to add? ");
-                    if (!int.TryParse(Console.ReadLine(), out int questionCount) || questionCount <= 0)
-                    {
-                        AnsiConsole.MarkupLine("[red]❌ Invalid number. Returning to main menu...[/]");
-                        break;
-                    }
-
-                    for (int i = 1; i <= questionCount; i++)
                     {
                         AnsiConsole.Clear();
-                        AnsiConsole.MarkupLine($"[yellow]📋 Creating question {i}/{questionCount}[/]");
-                        Console.Write("Enter question text: ");
-                        var questionText = Console.ReadLine()!;
+                        AnsiConsole.Write(
+                            new FigletText("📝 Create Survey")
+                                .Centered()
+                                .Color(Color.Cyan1)
+                        );
 
-                        var questionId = questionService.Create(questionText, surveyId);
-                        AnsiConsole.MarkupLine($"[green]✔ Question added successfully![/]");
+                        Console.Write("Enter a title for the new survey: ");
+                        var surveyTitle = Console.ReadLine()!;
+                        var surveyId = surveyService.Create(surveyTitle, currentUser.Id);
+
+                        AnsiConsole.MarkupLine($"[green]✔ Survey '{surveyTitle}' created successfully![/]");
                         Console.WriteLine();
 
-                        for (int j = 1; j <= 4; j++)
+                        Console.Write("How many questions do you want to add? ");
+                        if (!int.TryParse(Console.ReadLine(), out int questionCount) || questionCount <= 0)
                         {
-                            Console.Write($"Enter option {j} text: ");
-                            var optionText = Console.ReadLine()!;
-                            optionService.Create(optionText, questionId);
+                            AnsiConsole.MarkupLine("[red]❌ Invalid number. Returning to main menu...[/]");
+                            break;
                         }
 
-                        AnsiConsole.MarkupLine("[green]✔ 4 options added successfully![/]");
-                        Console.WriteLine();
-                    }
+                        for (int i = 1; i <= questionCount; i++)
+                        {
+                            AnsiConsole.Clear();
+                            AnsiConsole.MarkupLine($"[yellow]📋 Creating question {i}/{questionCount}[/]");
+                            Console.Write("Enter question text: ");
+                            var questionText = Console.ReadLine()!;
 
-                    AnsiConsole.MarkupLine("[cyan]🎉 Survey created successfully with all questions and options![/]");
-                    Console.WriteLine("Press any key to return to the main menu...");
-                    Console.ReadKey();
-                    break;
-                }
+                            var questionId = questionService.Create(questionText, surveyId);
+                            AnsiConsole.MarkupLine($"[green]✔ Question added successfully![/]");
+                            Console.WriteLine();
 
+                            for (int j = 1; j <= 4; j++)
+                            {
+                                Console.Write($"Enter option {j} text: ");
+                                var optionText = Console.ReadLine()!;
+                                optionService.Create(optionText, questionId);
+                            }
 
+                            AnsiConsole.MarkupLine("[green]✔ 4 options added successfully![/]");
+                            Console.WriteLine();
+                        }
 
-                case 2:
-                {
-                    break;
-                }
-                case 3:
-                {
-                    var surveys = surveyService.GetAll();
-
-                    AnsiConsole.Clear();
-                    AnsiConsole.Write(
-                        new FigletText("🗳 Survey List 🗳")
-                            .Centered()
-                            .Color(Color.Cyan1)
-                    );
-
-                    if (surveys == null || !surveys.Any())
-                    {
-                        AnsiConsole.MarkupLine("[red]❌ No surveys found.[/]");
-                        AnsiConsole.MarkupLine("[yellow]Press any key to return...[/]");
+                        AnsiConsole.MarkupLine("[cyan]🎉 Survey created successfully with all questions and options![/]");
+                        Console.WriteLine("Press any key to return to the main menu...");
                         Console.ReadKey();
                         break;
                     }
 
-                    var table = new Table()
-                        .Centered()
-                        .Border(TableBorder.Rounded)
-                        .Title("[bold yellow]Available Surveys[/]")
-                        .AddColumn("[green]ID[/]")
-                        .AddColumn("[aqua]Title[/]");
-
-                    foreach (var s in surveys)
+                case 2:
                     {
-                        table.AddRow($"[white]{s.Id}[/]", $"[silver]{s.Tilte}[/]");
+                        Console.WriteLine("coming soon!");
+                        Console.ReadKey();
+                        break;
                     }
-
-                    AnsiConsole.Write(table);
-
-                    AnsiConsole.MarkupLine("\n[bold cyan]Enter the ID of the survey you want to delete:[/]");
-                    int surveyId = AnsiConsole.Ask<int>("[yellow]>[/] ");
-
-                    var confirm = AnsiConsole.Confirm($"Are you sure you want to delete survey [red]{surveyId}[/]?");
-                    if (confirm)
+                case 3:
                     {
-                        try
+                        var surveys = surveyService.GetAll();
+
+                        AnsiConsole.Clear();
+                        AnsiConsole.Write(
+                            new FigletText("🗳 Survey List 🗳")
+                                .Centered()
+                                .Color(Color.Cyan1)
+                        );
+
+                        if (surveys == null || !surveys.Any())
                         {
-                            surveyService.Delete(surveyId);
-                            AnsiConsole.MarkupLine($"[green]✔ Survey with ID {surveyId} deleted successfully![/]");
+                            AnsiConsole.MarkupLine("[red]❌ No surveys found.[/]");
+                            AnsiConsole.MarkupLine("[yellow]Press any key to return...[/]");
+                            Console.ReadKey();
+                            break;
                         }
-                        catch (Exception ex)
-                        {
-                            AnsiConsole.MarkupLine($"[red]⚠ Error:[/] {ex.Message}");
-                        }
-                    }
-                    else
-                    {
-                        AnsiConsole.MarkupLine("[grey]Deletion cancelled.[/]");
-                    }
 
-                    AnsiConsole.MarkupLine("\n[italic yellow]Press any key to return...[/]");
-                    Console.ReadKey();
-                    break;
-                }
+                        var table = new Table()
+                            .Centered()
+                            .Border(TableBorder.Rounded)
+                            .Title("[bold yellow]Available Surveys[/]")
+                            .AddColumn("[green]ID[/]")
+                            .AddColumn("[aqua]Title[/]");
+
+                        foreach (var s in surveys)
+                        {
+                            table.AddRow($"[white]{s.Id}[/]", $"[silver]{s.Tilte}[/]");
+                        }
+
+                        AnsiConsole.Write(table);
+
+                        AnsiConsole.MarkupLine("\n[bold cyan]Enter the ID of the survey you want to delete:[/]");
+                        int surveyId = AnsiConsole.Ask<int>("[yellow]>[/] ");
+
+                        var confirm = AnsiConsole.Confirm($"Are you sure you want to delete survey [red]{surveyId}[/]?");
+                        if (confirm)
+                        {
+                            try
+                            {
+                                surveyService.Delete(surveyId);
+                                AnsiConsole.MarkupLine($"[green]✔ Survey with ID {surveyId} deleted successfully![/]");
+                            }
+                            catch (Exception ex)
+                            {
+                                AnsiConsole.MarkupLine($"[red]⚠ Error:[/] {ex.Message}");
+                            }
+                        }
+                        else
+                        {
+                            AnsiConsole.MarkupLine("[grey]Deletion cancelled.[/]");
+                        }
+
+                        AnsiConsole.MarkupLine("\n[italic yellow]Press any key to return...[/]");
+                        Console.ReadKey();
+                        break;
+                    }
 
                 case 4:
                     {
@@ -587,10 +582,10 @@ void AdminMenu(IServiceProvider serviceProvider)
 
 
                 case 5:
-                {
-                    AuthenticationMenu(serviceProvider);
-                    break;
-                }
+                    {
+                        AuthenticationMenu(serviceProvider);
+                        break;
+                    }
                 default:
                     Console.WriteLine("❌ Invalid input.");
                     Console.ReadKey();
