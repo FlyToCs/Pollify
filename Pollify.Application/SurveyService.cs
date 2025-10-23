@@ -6,13 +6,9 @@ namespace Pollify.Application;
 
 public class SurveyService(ISurveyRepository surveyRepository) : ISurveyService
 {
-    public void Create(CreateSurveyDto createSurveyDto)
+    public int Create(string title,int userId)
     {
-        if (surveyRepository.IsSurveyTitleExist(createSurveyDto.SurveyTitle))
-            throw new Exception("you created a survey with this title before");
-        
-        surveyRepository.Create(createSurveyDto);
-        surveyRepository.Save();
+        return surveyRepository.Create(title,userId);
     }
 
     public int Delete(int surveyId)

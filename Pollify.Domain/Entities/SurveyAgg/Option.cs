@@ -11,7 +11,7 @@ public class Option : BaseEntity<int>
 
     public Option(string text) => Text = text;
 
-    private Option()
+    public Option()
     {
 
     } 

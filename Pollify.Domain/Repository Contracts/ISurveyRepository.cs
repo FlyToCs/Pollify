@@ -4,7 +4,7 @@ namespace Pollify.Domain.Entities.SurveyAgg;
 
 public interface ISurveyRepository
 {
-    void Create(CreateSurveyDto createSurveyDto);
+    int Create(string name,int userId);
     bool IsSurveyTitleExist(string title);
     bool SurveyHasParticipant(int surveyId);
     int Delete(int surveyId);
