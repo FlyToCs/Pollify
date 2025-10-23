@@ -20,8 +20,8 @@ public class UserService(IUserRepository userRepository) : IUserService
 
         if (password.Length<6)
             throw new Exception("the password can't be less than 6 characters");
-        
-        userRepository.Create(new User(firstName, lastName, userName , password));
+        password = PasswordHasherSha256.HashPassword(password);
+        userRepository.Create(new User(firstName, lastName, userName.ToLower() , password));
         userRepository.Save();
 
     }
@@ -29,7 +29,7 @@ public class UserService(IUserRepository userRepository) : IUserService
     public UserDto Login(string userName, string password)
     {
 
-        var user = userRepository.LoginGetByUserName(userName);
+        var user = userRepository.LoginGetByUserName(userName.ToLower());
         if (user == null)
             throw new Exception("the username or password is incorrect");
   

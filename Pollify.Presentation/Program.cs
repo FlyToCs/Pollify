@@ -80,67 +80,100 @@ void AuthenticationMenu(IServiceProvider serviceProvider)
         try
         {
             Console.Clear();
-            Console.WriteLine("1. Login");
-            Console.WriteLine("2. Register");
-            Console.WriteLine("3. Exit");
 
-            Console.Write("\nSelect an option:");
-            var selectedItem = int.Parse(Console.ReadLine()!);
+            AnsiConsole.Write(
+                new FigletText("Pollify")
+                    .Centered()
+                    .Color(Color.Aqua)
+            );
+
+            AnsiConsole.MarkupLine("[yellow]==============================[/]");
+            AnsiConsole.MarkupLine("[bold cyan]Welcome to the Survey System![/]");
+            AnsiConsole.MarkupLine("[yellow]==============================[/]\n");
+
+            var selectedItem = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[bold yellow]Choose an option:[/]")
+                    .AddChoices("🔑 Login", "📝 Register", "🚪 Exit")
+                    .HighlightStyle("bold cyan")
+            );
 
             switch (selectedItem)
             {
-                case 1:
+                case "🔑 Login":
                     {
-                        Console.Write("Enter username: ");
-                        var username = Console.ReadLine()!;
-                        Console.Write("Enter password: ");
-                        var password = Console.ReadLine()!;
+                        AnsiConsole.Clear();
+                        AnsiConsole.MarkupLine("[bold underline cyan]🔐 User Login[/]\n");
+
+                        var username = AnsiConsole.Ask<string>("[green]Enter username:[/]");
+                        var password = AnsiConsole.Prompt(
+                            new TextPrompt<string>("[green]Enter password:[/]")
+                                .PromptStyle("red")
+                                .Secret()
+                        );
 
                         currentUser = userService.Login(username, password);
 
+                        AnsiConsole.MarkupLine("[green]✅ Login successful![/]\n");
+
                         if (currentUser.Role == UserRoleEnum.Admin)
                         {
-                            AdminMenu(serviceProvider);
+                            AnsiConsole.MarkupLine("[bold yellow]Welcome, Admin![/]");
+                            AnsiConsole.Status().Start("Loading admin menu...", ctx =>
+                            {
+                                Thread.Sleep(800);
+                                AdminMenu(serviceProvider);
+                            });
                         }
                         else if (currentUser.Role == UserRoleEnum.Member)
                         {
-                            MemberMenu(serviceProvider);
+                            AnsiConsole.MarkupLine("[bold yellow]Welcome, Member![/]");
+                            AnsiConsole.Status().Start("Loading member menu...", ctx =>
+                            {
+                                Thread.Sleep(800);
+                                MemberMenu(serviceProvider);
+                            });
                         }
 
+                        AnsiConsole.MarkupLine("\nPress any key to continue...");
                         Console.ReadKey();
                         break;
                     }
-                case 2:
+
+                case "📝 Register":
                     {
-                        Console.Write("Enter first name: ");
-                        var firstName = Console.ReadLine()!;
-                        Console.Write("Enter last name: ");
-                        var lastName = Console.ReadLine()!;
-                        Console.Write("Enter username: ");
-                        var username = Console.ReadLine()!;
-                        Console.Write("Enter password: ");
-                        var password = Console.ReadLine()!;
+                        AnsiConsole.Clear();
+                        AnsiConsole.MarkupLine("[bold underline green]📝 Register New User[/]\n");
+
+                        var firstName = AnsiConsole.Ask<string>("[cyan]Enter first name:[/]");
+                        var lastName = AnsiConsole.Ask<string>("[cyan]Enter last name:[/]");
+                        var username = AnsiConsole.Ask<string>("[cyan]Choose a username:[/]");
+                        var password = AnsiConsole.Prompt(
+                            new TextPrompt<string>("[cyan]Choose a password:[/]")
+                                .PromptStyle("red")
+                                .Secret()
+                        );
 
                         userService.Register(firstName, lastName, username, password);
-                        Console.WriteLine("✅ User registered successfully!");
+
+                        AnsiConsole.MarkupLine("[green]✅ User registered successfully![/]");
+                        AnsiConsole.MarkupLine("\nPress any key to return to menu...");
                         Console.ReadKey();
                         break;
                     }
-                case 3:
+
+                case "🚪 Exit":
+                    AnsiConsole.MarkupLine("\n[bold red]Goodbye! 👋[/]");
+                    Thread.Sleep(600);
                     return;
-                default:
-                    Console.WriteLine("❌ Invalid input.");
-                    Console.ReadKey();
-                    break;
             }
         }
         catch (Exception e)
         {
-            Console.WriteLine(e.Message);
+            AnsiConsole.MarkupLine($"\n[red]❌ {e.Message}[/]");
+            AnsiConsole.MarkupLine("[yellow]Press any key to try again...[/]");
             Console.ReadKey();
         }
-
-
     }
 }
 
