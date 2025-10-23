@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Pollify.Application;
 using Pollify.Application.Contracts;
 using Pollify.Domain.DTOs;
+using Pollify.Domain.Entities.SurveyAgg;
 using Pollify.Domain.Entities.UserAgg;
 using Pollify.Framework;
 using ServiceRegistry;
@@ -158,8 +159,9 @@ void AuthenticationMenu(IServiceProvider serviceProvider)
 
                 case "🚪 Exit":
                     AnsiConsole.MarkupLine("\n[bold red]Goodbye! 👋[/]");
-                    Thread.Sleep(600);
-                    return;
+                    Thread.Sleep(1000);
+                    Environment.Exit(0);
+                    break;
             }
         }
         catch (Exception e)
@@ -183,15 +185,19 @@ void MemberMenu(IServiceProvider serviceProvider)
         try
         {
             Console.Clear();
-            Console.WriteLine("1. Survey List");
-            Console.WriteLine("2. Vote");
-            Console.WriteLine("3. Logout");
-            Console.Write("\nSelect an option:");
-            var selectedItem = int.Parse(Console.ReadLine()!);
+            var selectedItem = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[bold yellow]Choose an option:[/]")
+                    .AddChoices(
+                        "Survey List",
+                        "Vote",
+                        "Logout")
+                    .HighlightStyle("bold cyan")
+            );
 
             switch (selectedItem)
             {
-                case 1:
+                case "Survey List":
                     {
                         var surveys = surveyService.GetAll();
 
@@ -226,7 +232,7 @@ void MemberMenu(IServiceProvider serviceProvider)
                         Console.ReadKey();
                         break;
                     }
-                case 2:
+                case "Vote":
                     {
                         var surveys = surveyService.GetAll();
                         Console.WriteLine("📋 Available Surveys:");
@@ -302,7 +308,7 @@ void MemberMenu(IServiceProvider serviceProvider)
                     }
 
 
-                case 3:
+                case "Logout":
                     {
                         AuthenticationMenu(serviceProvider);
                         break;
@@ -333,18 +339,22 @@ void AdminMenu(IServiceProvider serviceProvider)
         try
         {
             Console.Clear();
-            Console.WriteLine("1. Create a Survey");
-            Console.WriteLine("2. Add Question to a Survey");
-            Console.WriteLine("3. Delete a Survey");
-            Console.WriteLine("4. Result a Survey");
-            Console.WriteLine("5. Logout");
+            var selectedItem = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[bold yellow]Choose an option:[/]")
+                    .AddChoices(
+                        "Create a Survey",
+                        "Add Question to a Survey",
+                        "Delete a Survey",
+                        "Result a Survey",
+                        "Logout"
+                        ).HighlightStyle("bold cyan")
+            );
 
-            Console.Write("\nSelect an option:");
-            var selectedItem = int.Parse(Console.ReadLine()!);
 
             switch (selectedItem)
             {
-                case 1:
+                case "Create a Survey":
                     {
                         AnsiConsole.Clear();
                         AnsiConsole.Write(
@@ -395,13 +405,13 @@ void AdminMenu(IServiceProvider serviceProvider)
                         break;
                     }
 
-                case 2:
+                case "Add Question to a Survey":
                     {
                         Console.WriteLine("coming soon!");
                         Console.ReadKey();
                         break;
                     }
-                case 3:
+                case "Delete a Survey":
                     {
                         var surveys = surveyService.GetAll();
 
@@ -460,7 +470,7 @@ void AdminMenu(IServiceProvider serviceProvider)
                         break;
                     }
 
-                case 4:
+                case "Result a Survey":
                     {
                         AnsiConsole.Clear();
                         AnsiConsole.Write(
@@ -579,9 +589,7 @@ void AdminMenu(IServiceProvider serviceProvider)
                         break;
                     }
 
-
-
-                case 5:
+                case "Logout":
                     {
                         AuthenticationMenu(serviceProvider);
                         break;

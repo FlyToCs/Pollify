@@ -8,6 +8,9 @@ public class SurveyService(ISurveyRepository surveyRepository) : ISurveyService
 {
     public int Create(string title,int userId)
     {
+        if (surveyRepository.IsSurveyTitleExist(title))
+            throw new Exception("you already have a survey with this name");
+        
         return surveyRepository.Create(title,userId);
     }
 
