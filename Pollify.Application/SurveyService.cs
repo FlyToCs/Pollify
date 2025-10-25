@@ -42,7 +42,7 @@ public class SurveyService(ISurveyRepository surveyRepository) : ISurveyService
                     : Math.Round(((decimal)option.OptionCount / totalVotes) * 100, 2);
             }
         }
-
+         
         resultDto.TotalParticipantCount = resultDto.Participants.Count;
         return resultDto;
     }

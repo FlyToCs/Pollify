@@ -14,56 +14,56 @@ Console.OutputEncoding = System.Text.Encoding.UTF8;
 
 
 
-// AnsiConsole.Clear();
-// AnsiConsole.Write(
-//     new FigletText("🚀 MyApp 🚀")
-//         .Centered()
-//         .Color(Color.Aqua)
-// );
-//
-// Console.WriteLine();
-// AnsiConsole.Write(
-//     new Rule("[yellow]Starting Application[/]")
-//         .Centered()
-//         .RuleStyle("grey")
-// );
-//
-//
-// await AnsiConsole.Progress()
-//     .AutoClear(false)
-//     .HideCompleted(false)
-//     .Columns(new ProgressColumn[]
-//     {
-//         new TaskDescriptionColumn(), 
-//         new ProgressBarColumn(),     
-//         new PercentageColumn(),    
-//         new SpinnerColumn(Spinner.Known.Dots12) 
-//     })
-//     .StartAsync(async ctx =>
-//     {
-//         var dbTask = ctx.AddTask("[cyan]Connecting to database[/]");
-//         var appTask = ctx.AddTask("[yellow]Loading modules[/]");
-//         var uiTask = ctx.AddTask("[green]Building UI[/]");
-//
-//         while (!ctx.IsFinished)
-//         {
-//             await Task.Delay(150);
-//
-//             dbTask.Increment(4.5);
-//             appTask.Increment(2.5);
-//             uiTask.Increment(3.5);
-//         }
-//     });
-//
-//
-// AnsiConsole.Write(
-//     new FigletText("✔ Application Started!")
-//         .Centered()
-//         .Color(Color.Gold1)
-// );
-//
-// AnsiConsole.MarkupLine("\n[yellow]Press any key to continue...[/]");
-// Console.ReadKey(true);
+AnsiConsole.Clear();
+AnsiConsole.Write(
+    new FigletText("🚀 MyApp 🚀")
+        .Centered()
+        .Color(Color.Aqua)
+);
+
+Console.WriteLine();
+AnsiConsole.Write(
+    new Rule("[yellow]Starting Application[/]")
+        .Centered()
+        .RuleStyle("grey")
+);
+
+
+await AnsiConsole.Progress()
+    .AutoClear(false)
+    .HideCompleted(false)
+    .Columns(new ProgressColumn[]
+    {
+        new TaskDescriptionColumn(), 
+        new ProgressBarColumn(),     
+        new PercentageColumn(),    
+        new SpinnerColumn(Spinner.Known.Dots12) 
+    })
+    .StartAsync(async ctx =>
+    {
+        var dbTask = ctx.AddTask("[cyan]Connecting to database[/]");
+        var appTask = ctx.AddTask("[yellow]Loading modules[/]");
+        var uiTask = ctx.AddTask("[green]Building UI[/]");
+
+        while (!ctx.IsFinished)
+        {
+            await Task.Delay(150);
+
+            dbTask.Increment(4.5);
+            appTask.Increment(2.5);
+            uiTask.Increment(3.5);
+        }
+    });
+
+
+AnsiConsole.Write(
+    new FigletText("✔ Application Started!")
+        .Centered()
+        .Color(Color.Gold1)
+);
+
+AnsiConsole.MarkupLine("\n[yellow]Press any key to continue...[/]");
+Console.ReadKey(true);
 
 var host = CreateHostBuilder().Build();
 var serviceProvider = host.Services;
